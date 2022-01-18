@@ -13,6 +13,11 @@ func Schema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Required: true,
 		},
+		"map_from_onelogin": &schema.Schema{
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  false,
+		},
 		"expression": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
@@ -32,13 +37,15 @@ func Schema() map[string]*schema.Schema {
 func Inflate(s map[string]interface{}) apprules.AppRuleActions {
 	out := apprules.AppRuleActions{}
 	if act, notNil := s["action"].(string); notNil {
-		if act == "set_role_from_existing" {
-			act = "set_role"
-			out.Expression = nil
-		} else {
+		if s["map_from_onelogin"].(bool) {
 			if exp, notNil := s["expression"].(string); notNil {
 				out.Expression = oltypes.String(exp)
 			}
+		} else {
+			out.Expression = nil
+		}
+		if act == "set_role_from_existing" {
+			act = "set_role"
 		}
 		out.Action = oltypes.String(act)
 	}
